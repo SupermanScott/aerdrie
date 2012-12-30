@@ -17,7 +17,7 @@
       (is (= 1 (value-pn-counter c)))
       )))
 
-(deftest merge
+(deftest merge-counter-test
   (testing "Merging counters together"
     (let [c (create-pn-counter)
           d (create-pn-counter)
