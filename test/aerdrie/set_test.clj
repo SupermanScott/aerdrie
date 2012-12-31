@@ -44,7 +44,7 @@
   (testing "Checking realized value of the set"
     (let [s (create-lww-set)]
       (add-set s "a")
-      (is (seq (filter #(= "a" (:value %)) (realized-set-value s))))
+      (is (seq (filter #(= "a" (:member-id %)) (realized-set-value s))))
       (remove-set s "a")
       (is (empty? (realized-set-value s)))
       )))
@@ -87,9 +87,9 @@
     (let [s (create-sorted-set)]
       (add-sorted-set s "a" 1.0)
       (add-sorted-set s "b" 2.0)
-      (is (= "b" (:value (last (realized-set-value s)))))
+      (is (= "b" (:member-id (last (realized-set-value s)))))
       (add-sorted-set s "a" 3.0)
-      (is (= "a" (:value (last (realized-set-value s)))))
+      (is (= "a" (:member-id (last (realized-set-value s)))))
       (remove-set s "a")
-      (is (= "b" (:value (last (realized-set-value s)))))
+      (is (= "b" (:member-id (last (realized-set-value s)))))
       )))
