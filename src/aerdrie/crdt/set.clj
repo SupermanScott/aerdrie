@@ -3,6 +3,7 @@
 (defprotocol CRDTSet
   (lookup [this value])
   (remove-value [this value])
+  (realized-value [this])
 )
 
 (defprotocol LWWSet
@@ -22,8 +23,8 @@
           removed (first (sort-by :timestamp > matching-remove))]
           (cond
            (not added) nil
-           (not removed) true
-           (< (:timestamp removed) (:timestamp added)) true
+           (not removed) added
+           (< (:timestamp removed) (:timestamp added)) added
            :else nil
            )))
   (remove-value [this value]
@@ -31,6 +32,8 @@
       (let [member (->set-member value (System/currentTimeMillis))]
         (assoc this :removed (conj (:removed this) member)))
       this))
+  (realized-value [this]
+    (filter #(= (.lookup this (:value %)) %) (:added this)))
   LWWSet
   (add-value [this value]
     (let [member (->set-member value (System/currentTimeMillis))]
@@ -61,8 +64,8 @@
           removed (first (sort-by :timestamp > matching-remove))]
           (cond
            (not added) nil
-           (not removed) (:score added)
-           (< (:timestamp removed) (:timestamp added)) (:score added)
+           (not removed) added
+           (< (:timestamp removed) (:timestamp added)) added
            :else nil
            )))
   (remove-value [this value]
@@ -70,6 +73,8 @@
       (let [member (->set-member value (System/currentTimeMillis))]
         (assoc this :removed (conj (:removed this) member)))
       this))
+  (realized-value [this]
+    (filter #(= (.lookup this (:value %)) %) (:added this)))
   SortedSet
   (add-sorted-value [this value score]
     (when (.lookup this value)
@@ -105,6 +110,11 @@
   "Remove the value from the set"
   [set value]
   (swap! set #(.remove-value % value)))
+
+(defn realized-set-value
+  "Return the full realized value of the set as a lazy sequence"
+  [set]
+  (.realized-value @set))
 
 (defn merge-set
   "Merges multiple versions of the set into one atom"
