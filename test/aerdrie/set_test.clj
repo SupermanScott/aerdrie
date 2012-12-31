@@ -6,7 +6,9 @@
   (testing "Adding same member multiple times"
     (let [s (create-lww-set)]
       (add-set s 1)
+      (is (true? (lookup-set s 1)))
       (remove-set s 1)
+      (is (false? (lookup-set s 1)))
       (add-set s 1)
       (is (true? (lookup-set s 1)))
       )))
