@@ -45,3 +45,17 @@
       (remove-set g 2)
       (is (nil? (lookup-set (merge-set c d g) 2)))
       )))
+
+(deftest sorted-set-operations
+  (testing "Sorted Set operations of removing and adding"
+    (let [s (create-sorted-set)]
+      (is (nil? (lookup-set s 1)))
+      (add-sorted-set s 1 2.0)
+      (is (= 2.0 (lookup-set s 1)))
+      (remove-set s 1)
+      (is (nil? (lookup-set s 1)))
+      (remove-set s 1)
+      (is (nil? (lookup-set s 1)))
+      (add-sorted-set s 2 1.0)
+      (is (nil? (lookup-set s 1)))
+      )))
