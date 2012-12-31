@@ -2,9 +2,11 @@
   (:use clojure.set))
 (defprotocol CRDTSet
   (lookup [this value])
-  (add-value [this value])
   (remove-value [this value])
 )
+
+(defprotocol LWWSet
+    (add-value [this value]))
 
 (defrecord set-member [value timestamp])
 (defrecord lww-set [added removed]
@@ -16,21 +18,20 @@
           added (first (sort-by :timestamp > matching-add))
           removed (first (sort-by :timestamp > matching-remove))]
           (cond
-           (not added) false
+           (not added) nil
            (not removed) true
            (< (:timestamp removed) (:timestamp added)) true
-           :else false
+           :else nil
            )))
-
-  (add-value [this value]
-    (let [member (->set-member value (System/currentTimeMillis))]
-      (assoc this :added (conj (:added this) member))))
-
   (remove-value [this value]
     (if (.lookup this value)
       (let [member (->set-member value (System/currentTimeMillis))]
         (assoc this :removed (conj (:removed this) member)))
-      this)))
+      this))
+  LWWSet
+  (add-value [this value]
+    (let [member (->set-member value (System/currentTimeMillis))]
+      (assoc this :added (conj (:added this) member)))))
 
 (defn create-lww-set
   "Creates a new set"
