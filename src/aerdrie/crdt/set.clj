@@ -54,8 +54,11 @@
 (defrecord lww-sorted-set [added removed]
   CRDTSet
   (lookup [this value]
-    (let [added (some #(when (= (:value %) value) %) (:added this))
-          removed (some #(when (= (:value %) value) %) (:removed this))]
+    (let [query #(= value (:value %))
+          matching-add (filter query (:added this))
+          matching-remove (filter query (:removed this))
+          added (first (sort-by :timestamp > matching-add))
+          removed (first (sort-by :timestamp > matching-remove))]
           (cond
            (not added) nil
            (not removed) (:score added)

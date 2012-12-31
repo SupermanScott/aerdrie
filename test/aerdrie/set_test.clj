@@ -8,10 +8,23 @@
       (add-set s 1)
       (is (true? (lookup-set s 1)))
       (remove-set s 1)
-      (is (false? (lookup-set s 1)))
+      (is (nil? (lookup-set s 1)))
       (add-set s 1)
       (is (true? (lookup-set s 1)))
       )))
+
+(deftest multiple-add-sort
+  (testing "Adding same member multiple times with different scores")
+  (let [s (create-sorted-set)]
+    (add-sorted-set s 1 1.0)
+    (is (= 1.0 (lookup-set s 1)))
+    (add-sorted-set s 1 2.0)
+    (is (= 2.0 (lookup-set s 1)))
+    (remove-set s 1)
+    (is (nil? (lookup-set s 1)))
+    (add-sorted-set s 1 3.0)
+    (is (= 3.0 (lookup-set s 1)))
+    ))
 
 (deftest set-operations
   (testing "Set operations of removing and adding"
