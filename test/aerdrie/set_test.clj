@@ -2,6 +2,15 @@
   (:use clojure.test
         aerdrie.crdt.set))
 
+(deftest multiple-add
+  (testing "Adding same member multiple times"
+    (let [s (create-lww-set)]
+      (add-set s 1)
+      (remove-set s 1)
+      (add-set s 1)
+      (is (true? (lookup-set s 1)))
+      )))
+
 (deftest set-operations
   (testing "Set operations of removing and adding"
     (let [s (create-lww-set)]
