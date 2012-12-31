@@ -34,23 +34,23 @@
   []
   (atom (->lww-set #{} #{})))
 
-(defn lookup-lww-set
+(defn lookup-set
   "Returns non-nil if the value is in the set"
   [set value]
   (let [set-value @set]
     (.lookup set-value value)))
 
-(defn add-lww-set
+(defn add-set
   "Add the value to the set"
   [set value]
   (swap! set #(.add-value % value)))
 
-(defn remove-lww-set
+(defn remove-set
   "Remove the value from the set"
   [set value]
   (swap! set #(.remove-value % value)))
 
-(defn merge-lww-set
+(defn merge-set
   "Merges multiple versions of the set into one atom"
   [& sets]
   (let [added (apply union (map #(:added @%) sets))
