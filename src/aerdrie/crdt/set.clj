@@ -1,40 +1,56 @@
 (ns aerdrie.crdt.set
   (:use clojure.set))
+(defprotocol CRDTSet
+  (lookup [this value])
+  (add-value [this value])
+  (remove-value [this value])
+)
+
 (defrecord set-member [value timestamp])
-(defrecord lww-set [added removed])
+(defrecord lww-set [added removed]
+  CRDTSet
+  (lookup [this value]
+    (let [added (some #(when (= (:value %) value) %) (:added this))
+          removed (some #(when (= (:value %) value) %) (:removed this))]
+          (cond
+           (not added) false
+           (not removed) true
+           (< (:timestamp removed) (:timestamp added)) true
+           :else false
+           )))
+
+  (add-value [this value]
+    (let [member (->set-member value (System/currentTimeMillis))]
+      (assoc this :added (conj (:added this) member))))
+
+  (remove-value [this value]
+    (if (.lookup this value)
+      (let [member (->set-member value (System/currentTimeMillis))]
+        (assoc this :removed (conj (:removed this) member)))
+      this)))
 
 (defn create-lww-set
   "Creates a new set"
   []
   (atom (->lww-set #{} #{})))
 
-(defn lookup-lww-set
+(defn lookup-set
   "Returns non-nil if the value is in the set"
   [set value]
-  (let [set-value @set
-        added (some #(when (= (:value %) value) %) (:added set-value))
-        removed (some #(when (= (:value %) value) %) (:removed set-value))]
-    (cond
-     (not added) false
-     (not removed) true
-     (< (:timestamp removed) (:timestamp added)) true
-     :else false
-     )))
+  (let [set-value @set]
+    (.lookup set-value value)))
 
-(defn add-lww-set
+(defn add-set
   "Add the value to the set"
   [set value]
-  (let [member (->set-member value (System/currentTimeMillis))]
-    (swap! set #(assoc % :added (conj (:added %) member)))))
+  (swap! set #(.add-value % value)))
 
-(defn remove-lww-set
+(defn remove-set
   "Remove the value from the set"
   [set value]
-  (when (lookup-lww-set set value)
-    (let [member (->set-member value (System/currentTimeMillis))]
-      (swap! set #(assoc % :removed (conj (:removed %) member))))))
+  (swap! set #(.remove-value % value)))
 
-(defn merge-lww-set
+(defn merge-set
   "Merges multiple versions of the set into one atom"
   [& sets]
   (let [added (apply union (map #(:added @%) sets))
