@@ -4,15 +4,10 @@
   (lookup [this member-id])
   (remove-value [this member-id])
   (realized-value [this])
+  (add-value [this member-id value])
 )
 
-(defprotocol LWWSet
-    (add-value [this member-id]))
-
-(defprotocol SortedSet
-  (add-sorted-value [this member-id score]))
-
-(defrecord set-member [member-id timestamp])
+(defrecord set-member [member-id timestamp value])
 (defrecord lww-set [added removed]
   CRDTSet
   (lookup [this member-id]
@@ -29,14 +24,13 @@
            )))
   (remove-value [this member-id]
     (if (.lookup this member-id)
-      (let [member (->set-member member-id (System/currentTimeMillis))]
+      (let [member (->set-member member-id (System/currentTimeMillis) true)]
         (assoc this :removed (conj (:removed this) member)))
       this))
   (realized-value [this]
     (filter #(= (.lookup this (:member-id %)) %) (:added this)))
-  LWWSet
-  (add-value [this member-id]
-    (let [member (->set-member member-id (System/currentTimeMillis))]
+  (add-value [this member-id value]
+    (let [member (->set-member member-id (System/currentTimeMillis) value)]
       (assoc this :added (conj (:added this) member)))))
 
 (defn create-lww-set
@@ -44,12 +38,10 @@
   []
   (atom (->lww-set #{} #{})))
 
-(defrecord sorted-set-member [member-id timestamp score])
-
 (defn <-score
-  "Compares two sorted-set-members and takes smallest"
+  "Compares two set-members and takes smallest"
   [x y]
-  (let [c (compare (:score x) (:score y))]
+  (let [c (compare (:value x) (:value y))]
     (if (not= c 0)
       c
       (compare (:timestamp x) (:timestamp y)))))
@@ -70,16 +62,15 @@
            )))
   (remove-value [this member-id]
     (if (.lookup this member-id)
-      (let [member (->set-member member-id (System/currentTimeMillis))]
+      (let [member (->set-member member-id (System/currentTimeMillis) true)]
         (assoc this :removed (conj (:removed this) member)))
       this))
   (realized-value [this]
     (filter #(= (.lookup this (:member-id %)) %) (:added this)))
-  SortedSet
-  (add-sorted-value [this member-id score]
+  (add-value [this member-id score]
     (when (.lookup this member-id)
       (.remove-value this member-id))
-    (let [member (->sorted-set-member member-id (System/currentTimeMillis) score)
+    (let [member (->set-member member-id (System/currentTimeMillis) score)
           all-members (conj (:added this) member)
           sorted-members (apply sorted-set-by <-score all-members)]
       (assoc this :added sorted-members)
@@ -98,13 +89,10 @@
 
 (defn add-set
   "Add the member-id to the set"
-  [set member-id]
-  (swap! set #(.add-value % member-id)))
-
-(defn add-sorted-set
-  "Add the member-id to the sorted set"
-  [set member-id score]
-  (swap! set #(.add-sorted-value % member-id score)))
+  ([set member-id]
+     (add-set set member-id true))
+  ([set member-id value]
+     (swap! set #(.add-value % member-id value))))
 
 (defn remove-set
   "Remove the member-id from the set"
