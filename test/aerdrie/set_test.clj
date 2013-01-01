@@ -16,14 +16,14 @@
 (deftest multiple-add-sort
   (testing "Adding same member multiple times with different scores")
   (let [s (create-sorted-set)]
-    (add-sorted-set s 1 1.0)
-    (is (= 1.0 (:score (lookup-set s 1))))
-    (add-sorted-set s 1 2.0)
-    (is (= 2.0 (:score (lookup-set s 1))))
+    (add-set s 1 1.0)
+    (is (= 1.0 (:value (lookup-set s 1))))
+    (add-set s 1 2.0)
+    (is (= 2.0 (:value (lookup-set s 1))))
     (remove-set s 1)
     (is (nil? (lookup-set s 1)))
-    (add-sorted-set s 1 3.0)
-    (is (= 3.0 (:score (lookup-set s 1))))
+    (add-set s 1 3.0)
+    (is (= 3.0 (:value (lookup-set s 1))))
     ))
 
 (deftest set-operations
@@ -44,7 +44,7 @@
   (testing "Checking realized value of the set"
     (let [s (create-lww-set)]
       (add-set s "a")
-      (is (seq (filter #(= "a" (:value %)) (realized-set-value s))))
+      (is (seq (filter #(= "a" (:member-id %)) (realized-set-value s))))
       (remove-set s "a")
       (is (empty? (realized-set-value s)))
       )))
@@ -72,24 +72,24 @@
   (testing "Sorted Set operations of removing and adding"
     (let [s (create-sorted-set)]
       (is (nil? (lookup-set s 1)))
-      (add-sorted-set s 1 2.0)
-      (is (= 2.0 (:score (lookup-set s 1))))
+      (add-set s 1 2.0)
+      (is (= 2.0 (:value (lookup-set s 1))))
       (remove-set s 1)
       (is (nil? (lookup-set s 1)))
       (remove-set s 1)
       (is (nil? (lookup-set s 1)))
-      (add-sorted-set s 2 1.0)
+      (add-set s 2 1.0)
       (is (nil? (lookup-set s 1)))
       )))
 
 (deftest sorted-realize
   (testing "Checking the realized value of the sorted set"
     (let [s (create-sorted-set)]
-      (add-sorted-set s "a" 1.0)
-      (add-sorted-set s "b" 2.0)
-      (is (= "b" (:value (last (realized-set-value s)))))
-      (add-sorted-set s "a" 3.0)
-      (is (= "a" (:value (last (realized-set-value s)))))
+      (add-set s "a" 1.0)
+      (add-set s "b" 2.0)
+      (is (= "b" (:member-id (last (realized-set-value s)))))
+      (add-set s "a" 3.0)
+      (is (= "a" (:member-id (last (realized-set-value s)))))
       (remove-set s "a")
-      (is (= "b" (:value (last (realized-set-value s)))))
+      (is (= "b" (:member-id (last (realized-set-value s)))))
       )))
