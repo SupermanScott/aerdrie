@@ -38,7 +38,7 @@
   []
   (atom (->lww-set #{} #{})))
 
-(defn <-score
+(defn- <-score
   "Compares two set-members and takes smallest"
   [x y]
   (let [c (compare (:value x) (:value y))]
