@@ -109,16 +109,17 @@
   [& sets]
   (let [added (apply union (map #(:added @%) sets))
         removed (apply union (map #(:removed @%) sets))]
-    (atom (->lww-set added removed))))
+    (->lww-set added removed)))
 
 (defn sync-merge-set
   "Merges multiple versions of the set into one atom that can be replicated"
   [& sets]
   (let [added (apply union (map #(:added @%) sets))
         removed (apply union (map #(:removed @%) sets))
-        merged-set (atom (->lww-set added removed))
-        realized (realized-set-value merged-set)
+        merged-set (->lww-set added removed)
+        realized (.realized-value merged-set)
         not-realized (difference added realized)
-        remove-removed (filter #(not (lookup-set merged-set (:member-id %))) removed)
+        remove-removed (filter #(not (.lookup merged-set (:member-id %)))
+                               removed)
         new-remove-set (difference removed remove-removed)]
-    (atom (->lww-set realized new-remove-set))))
+    (->lww-set realized new-remove-set)))

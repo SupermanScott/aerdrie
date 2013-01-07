@@ -55,18 +55,18 @@
     (let [c (create-lww-set)
           d (create-lww-set)
           g (create-lww-set)]
-      (is (nil? (lookup-set (merge-set c d g) 1)))
+      (is (nil? (lookup-set (atom (merge-set c d g)) 1)))
       (add-set c 1)
-      (is (seq (lookup-set (merge-set c d g) 1)))
+      (is (seq (lookup-set (atom (merge-set c d g)) 1)))
       (add-set d 2)
-      (is (seq (lookup-set (merge-set c d g) 1)))
-      (is (seq (lookup-set (merge-set c d g) 2)))
+      (is (seq (lookup-set (atom (merge-set c d g)) 1)))
+      (is (seq (lookup-set (atom (merge-set c d g)) 2)))
       (remove-set c 1)
-      (is (nil? (lookup-set (merge-set c d g) 1)))
-      (is (seq (lookup-set (merge-set c d g) 2)))
+      (is (nil? (lookup-set (atom (merge-set c d g)) 1)))
+      (is (seq (lookup-set (atom (merge-set c d g)) 2)))
       (add-set g 2)
       (remove-set g 2)
-      (is (nil? (lookup-set (merge-set c d g) 2)))
+      (is (nil? (lookup-set (atom (merge-set c d g)) 2)))
       )))
 
 (deftest sorted-set-operations
@@ -108,8 +108,8 @@
       (remove-set g "b")
 
       (is (empty? (intersection
-                   (:added (deref (sync-merge-set s g))))))
+                   (:added (sync-merge-set s g)))))
       (add-set g "c")
       (is (not (empty? (intersection
-                        (:added (deref (sync-merge-set s g)))))))
+                        (:added (sync-merge-set s g))))))
       )))
