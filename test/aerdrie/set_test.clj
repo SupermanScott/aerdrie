@@ -1,6 +1,7 @@
 (ns aerdrie.set-test
   (:use clojure.test
-        aerdrie.crdt.set))
+        aerdrie.crdt.set
+        clojure.set))
 
 (deftest multiple-add
   (testing "Adding same member multiple times"
@@ -92,4 +93,23 @@
       (is (= "a" (:member-id (last (realized-set-value s)))))
       (remove-set s "a")
       (is (= "b" (:member-id (last (realized-set-value s)))))
+      )))
+
+(deftest sync-merge-values
+  (testing "Ensuring the sync merge returns the proper set"
+    (let [s (create-lww-set)
+          g (create-lww-set)]
+      (add-set s "a")
+      (add-set s "b")
+      (add-set g "b")
+      (add-set g "a")
+      (remove-set s "a")
+      (remove-set s "b")
+      (remove-set g "b")
+
+      (is (empty? (intersection
+                   (:added (deref (sync-merge-set s g))))))
+      (add-set g "c")
+      (is (not (empty? (intersection
+                        (:added (deref (sync-merge-set s g)))))))
       )))
