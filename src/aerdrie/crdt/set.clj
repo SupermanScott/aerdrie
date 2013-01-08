@@ -82,18 +82,18 @@
   (.realized-value @set))
 
 (defn merge-set
-  "Merges multiple versions of the set into one atom"
+  "Merges multiple versions of the set into one set"
   [& sets]
-  (let [added (apply union (map #(:added @%) sets))
-        removed (apply union (map #(:removed @%) sets))
+  (let [added (apply union (map #(:added %) sets))
+        removed (apply union (map #(:removed %) sets))
         sorted (every? :sorted sets)]
     (->lww-set added removed sorted)))
 
 (defn sync-merge-set
-  "Merges multiple versions of the set into one atom that can be replicated"
+  "Merges multiple versions of the set into one set that can be replicated"
   [& sets]
-  (let [added (apply union (map #(:added @%) sets))
-        removed (apply union (map #(:removed @%) sets))
+  (let [added (apply union (map #(:added %) sets))
+        removed (apply union (map #(:removed %) sets))
         sorted (every? :sorted sets)
         merged-set (->lww-set added removed sorted)
         realized (.realized-value merged-set)
