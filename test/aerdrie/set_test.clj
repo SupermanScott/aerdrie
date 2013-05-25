@@ -15,17 +15,17 @@
       )))
 
 (deftest multiple-add-sort
-  (testing "Adding same member multiple times with different scores")
-  (let [s (create-sorted-set)]
-    (add-set s 1 1.0)
-    (is (= 1.0 (:value (lookup-set s 1))))
-    (add-set s 1 2.0)
-    (is (= 2.0 (:value (lookup-set s 1))))
-    (remove-set s 1)
-    (is (nil? (lookup-set s 1)))
-    (add-set s 1 3.0)
-    (is (= 3.0 (:value (lookup-set s 1))))
-    ))
+  (testing "Adding same member multiple times with different scores"
+    (let [s (create-sorted-set)]
+      (add-set s 1 1.0)
+      (is (= 1.0 (:value (lookup-set s 1))))
+      (add-set s 1 2.0)
+      (is (= 2.0 (:value (lookup-set s 1))))
+      (remove-set s 1)
+      (is (nil? (lookup-set s 1)))
+      (add-set s 1 3.0)
+      (is (= 3.0 (:value (lookup-set s 1))))
+      )))
 
 (deftest set-operations
   (testing "Set operations of removing and adding"
