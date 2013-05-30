@@ -1,5 +1,4 @@
-(ns aerdrie.crdt.set
-  (:use clojure.set))
+(ns aerdrie.crdt.set)
 
 (defn- <-score
   "Compares two set-members and takes smallest"
