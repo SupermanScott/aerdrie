@@ -1,7 +1,8 @@
 (ns aerdrie.transaction
-  :require [[taoensso.nippy]
-            [clojure.java.io]]
-  :import 'java.util.UUID)
+  :require [taoensso.nippy]
+            [clojure.java.io]
+  :import [java.util.UUID])
+
 (defrecord transaction [transaction-id key object-type method args])
 
 (def transaction-table (ref {}))
